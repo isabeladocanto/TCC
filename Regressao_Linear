@@ -1,0 +1,41 @@
+#Iniciar carregando pacotes
+library(tidyverse)
+
+dados_TCC <- read.xlsx('Dados compilados - Scopus (3).xlsx')
+
+#Função básica da Regressão
+# regressao <- lm(Y ~ X1 + X2 + X3, data = dados)
+
+
+regressao <- lm(Cited.by ~ Year, data = dados_TCC)
+summary(regressao)
+
+ggplot(dados_TCC, aes(Cited.by, Year)) +
+  geom_point() +
+  geom_smooth(method = "lm")  
+
+# Para remover os outliers
+#Calcular o intervalo interquartil (IQR) da variável Cited.by
+
+dados_TCC_sem_NA <- dados_TCC[complete.cases(dados_TCC$Cited.by, dados_TCC$Year), ]
+Q1 <- quantile(dados_TCC_sem_NA$Cited.by, 0.25)
+Q3 <- quantile(dados_TCC_sem_NA$Cited.by, 0.75)
+IQR <- Q3 - Q1
+
+# Definir limites para identificar observações discrepantes
+limite_inferior <- Q1 - 1.5 * IQR
+limite_superior <- Q3 + 1.5 * IQR
+
+# Identificar observações discrepantes
+outliers <- dados_TCC_sem_NA$Cited.by < limite_inferior | dados_TCC_sem_NA$Cited.by > limite_superior
+
+# Remover 
+dados_sem_outliers <- dados_TCC_sem_NA[!outliers, ]
+
+# Rodar a regressão novamente
+regressao <- lm(Cited.by ~ Year, data = dados_sem_outliers)
+summary(regressao)
+
+ggplot(dados_sem_outliers, aes(Cited.by, Year)) +
+  geom_point() +
+  geom_smooth(method = "lm")  
