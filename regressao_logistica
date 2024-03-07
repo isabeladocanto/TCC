@@ -1,0 +1,58 @@
+# Aula - Regressão Logística
+
+# Instalar e carregar os pacotes necessários
+# Esse banco contém informações sobre eleições presidenciais dos Estados Unidos em 1996
+install.packages("car")
+library(car)
+
+# Carregue o conjunto de dados ANES96
+data(ANES96)
+
+# Visualize a estrutura do conjunto de dados
+str(ANES96)
+
+# Ajuste uma regressão logística
+# Função básica :
+# regressao_logistica <- glm(variavel_dependente ~ variavel_independente,
+#                            data = banco, family = "binomial")
+
+modelo <- glm(voto ~ idade + educacao + renda, data = ANES96, 
+              family = "binomial")
+
+# Visualize os resultados
+summary(modelo)
+
+
+# Para transformar em razão de chance
+# Instalar e carregar o pacote broom
+library(broom)
+
+# usar a função tidy()
+tidy(modelo, exponentiate = T, conf.int = T)
+
+
+# Criando gráficos
+# Instalar e carregar pacotes
+library(sjPlot)
+plot_model(modelo)
+
+# carregar o pacote margins para descobrir o efeito marginal médio 
+# Diz o aumento ou diminuição da probabilidade de ocorrência do evento
+library(margins)
+margins_summary(modelo)
+
+
+# Em regressões logísticas não existe a medida de R quadrado.
+# Usa-se um o pseudo R quadrado 
+# Instalar e carregar o pacote pscl
+library(pscl)
+pR2(modelo)
+
+# Também pode ser feito um cálculo dos valores preditos corretamente
+predicted_prob <- predict(modelo, type = "response")
+
+# carregar o pacote InformationValue
+library(InformationValue)
+# Calcular a proporção de classificações corretas
+1 - misClassError(banco$variavel_dependente,
+                  predicted_prob)
